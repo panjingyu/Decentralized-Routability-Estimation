@@ -1,0 +1,12 @@
+__pycache__/
+.vscode/
+.env/
+
+data/
+log/
+saved/
+remote/
+
+*.csv
+*.sh
+plot*

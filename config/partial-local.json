@@ -1,0 +1,5 @@
+{
+    "compactcnn2": ["output_conv"],
+    "routenet224": ["layer_c4"],
+    "pros224": ["rb_8_sub", "final_classifier"]
+}

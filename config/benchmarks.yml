@@ -1,0 +1,116 @@
+clients:
+  # IWLS 2005
+  - [ISCAS'89, ITC'99]
+  - [OpenCores, Faraday]
+  # ISPD 2015
+  - [ISPD'15]
+benchmark:
+  Faraday:
+    - DMA
+    - DSP
+    - RISC
+  Gaisler:
+    - grlib-eval-1.0
+    - leon2
+    - leon3-avnet-3s1500
+    - leon3mp
+    - netcard
+  ISCAS'89:
+    - s1196
+    - s1238
+    - s13207
+    - s1423
+    - s1488
+    - s1494
+    - s15850
+    - s208_1
+    - s27
+    - s298
+    - s344
+    - s349
+    - s35932
+    - s382
+    - s38417
+    - s38584
+    - s386
+    - s400
+    - s420_1
+    - s444
+    - s510
+    - s526n
+    - s526
+    - s5378
+    - s641
+    - s713
+    - s820
+    - s832
+    - s838_1
+    - s9234_1
+    - s953
+  ITC'99:
+    - b01
+    - b02
+    - b03
+    - b04
+    - b05
+    - b06
+    - b07
+    - b08
+    - b09
+    - b10
+    - b11
+    - b12
+    - b13
+    - b14_1
+    - b14
+    - b15_1
+    - b15
+    - b17_1
+    - b17
+    - b18_1
+    - b18
+    - b19_1
+    - b19
+    - b20_1
+    - b20
+    - b21_1
+    - b21
+    - b22_1
+    - b22
+    - b30
+  OpenCores:
+    - ac97_ctrl
+    - aes_core
+    - des
+    - ethernet
+    - fpu
+    - i2c
+    - mem_ctrl
+    - pci
+    - sasc
+    - simple_spi
+    - spi
+    - ss_pcm
+    - steppermotordrive
+    - systemcaes
+    - systemcdes
+    - tv80
+    - usb_funct
+    - usb_phy
+    - vga_lcd
+    - wb_conmax
+    - wb_dma
+  ISPD'15:
+    - mgc_pci_bridge32_a
+    - mgc_des_perf_b
+    - mgc_matrix_mult_1
+    - mgc_fft_2
+    - mgc_matrix_mult_b
+    - mgc_des_perf_1
+    - mgc_des_perf_a
+    - mgc_edit_dist_a
+    - mgc_fft_b
+    - mgc_pci_bridge32_b
+    - mgc_fft_1
+    - mgc_fft_a
+    - mgc_matrix_mult_a
