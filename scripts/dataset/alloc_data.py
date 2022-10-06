@@ -15,35 +15,6 @@ from utils.config import load_blacklist, load_yaml
 from utils.io import load_pkl_to_dict
 
 
-def arrange_data(data):
-    # load blacklists
-    layout_blacklist = load_blacklist('config/layout_blacklist.csv')
-    design_blacklist = load_blacklist('config/design_blacklist.csv')
-    print('Layout blacklist:', layout_blacklist)
-    print('Design blacklist:', design_blacklist)
-
-    features, labels = {}, {}
-    layout_opts = {}
-    design_cnt = 0
-    for k, (ft, lb) in data.items():
-        if any(k.startswith(l) for l in layout_blacklist):
-            continue
-        if any(k.endswith(d) for d in design_blacklist):
-            continue
-        opt_name, design_name = k.split('/')
-        ft = np.asarray(ft)
-        if design_name not in features:
-            features[design_name] = [ft]
-            labels[design_name] = [lb]
-            layout_opts[design_name] = [opt_name]
-            design_cnt += 1
-        else:
-            features[design_name].append(ft)
-            labels[design_name].append(lb)
-            layout_opts[design_name].append(opt_name)
-    return features, labels, layout_opts
-
-
 def dump_design_stats(features, designs, benchmarks, out='stats.csv'):
     stats = {'design': sorted(designs)}
     stats['benchmark'] = []
@@ -68,19 +39,10 @@ def dump_design_stats(features, designs, benchmarks, out='stats.csv'):
 
 
 def main(args):
-    # load pkl data
-    start = time.time()
-    data = load_pkl_to_dict(args.raw_dir)
-    t_elapsed = time.time() - start
-    print('{0} samples loaded, {1:.2f}s elapsed.'.format(len(data), t_elapsed))
-
-    features, labels, layout_opts = arrange_data(data)
-    del data
-
     # load benchmark specs
     config = load_yaml(args.benchmarks_yaml)
 
-    designs = sorted(features.keys())
+    designs = sorted(p[:-4] for p in os.listdir(args.raw_dir) if p.endswith('.pkl'))
     if not config.clients:
         # random allocation
         np.random.shuffle(designs)
@@ -95,7 +57,6 @@ def main(args):
             designs_of_client.append(
                 designs[alloc_design_cnt:alloc_design_cnt+n_designs])
             alloc_design_cnt += n_designs
-        print('#designs per client:', [len(d) for d in designs_of_client])
     else:
         args.n_clients = len(config.clients)
         designs_of_client = []
@@ -105,29 +66,31 @@ def main(args):
                 if any(d in config.benchmark[src] for src in client_sources)
             ]
             designs_of_client.append(designs_match)
+    print('#designs per client:', [len(d) for d in designs_of_client])
 
+    # print(designs_of_client)
+    features = {d: pickle.load(open(os.path.join(args.raw_dir, d+'.pkl'), 'rb'))[0]
+                for d in tqdm(designs, desc='Checking features')}
     dump_design_stats(features, designs, config.benchmark,
                       out=os.path.join(args.alloc_dir, 'designs.csv'))
 
     for i in range(args.n_clients):
         client_name = 'client_{}'.format(i)
-        client_dir = os.path.join(args.alloc_dir, )
+        client_dir = os.path.join(args.alloc_dir, client_name)
         client_raw_dir = os.path.join(client_dir, 'raw')
         client_designs = designs_of_client[i]
 
         designs_log = os.path.join(client_dir, 'designs.csv')
         dump_design_stats(features, client_designs, config.benchmark,
                           out=designs_log)
-
         os.makedirs(client_raw_dir, exist_ok=True)
-        for c_design in tqdm(client_designs, desc='alloc '+client_name):
-            design_pkl_path = os.path.join(client_raw_dir,
-                                           '{}.pkl'.format(c_design))
-            with open(design_pkl_path, 'wb') as f:
-                pickle.dump((features[c_design],
-                             labels[c_design],
-                             layout_opts[c_design]),
-                            f)
+        # unsure empty folder
+        for f in os.listdir(client_raw_dir):
+            os.remove(os.path.join(client_raw_dir, f))
+        # link raw pkl files to client raw folder
+        for d in designs:
+            os.link(os.path.join(args.raw_dir, d+'.pkl'),
+                    os.path.join(client_raw_dir, d+'.pkl'))
 
 
 if __name__ == '__main__':
@@ -135,7 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--n-clients', type=int, default=3,
                         help='Number of client devices.')
     parser.add_argument('--raw-dir', type=str,
-                        default='./data/raw-64.0423/_feature-pkl',
+                        default='./data/raw.src-wise',
                         help='Directory of raw features & labels '
                              'stored in pickle files.')
     parser.add_argument('--alloc-dir', type=str, default='./data/alloc',
