@@ -35,7 +35,7 @@ def main(args):
         server = RouteNetFCN(in_channels=64)
     elif args.model.lower() == 'pros':
         server = PROS(in_channels=64)
-        
+
     cuda_device_cnt = torch.cuda.device_count()
 
     # prepare clients
@@ -53,7 +53,8 @@ def main(args):
         else:
             client_device = device
         if args.resume_from is not None:
-            client_ckpt = os.path.join(
+            client_ckpt = os.path.join(args.saved, client,
+                                       'round-{}.pt'.format(args.resume_from))
             print(client, 'loaded from', client_ckpt)
             model.load_state_dict(torch.load(client_ckpt))
 
@@ -120,9 +121,9 @@ def main(args):
             os.makedirs(client_saved_dir, exist_ok=True)
             client.model.to('cpu')
             # if round_idx + 1 == args.max_round:
-            # torch.save(client.model.state_dict(),
-            #            os.path.join(client_saved_dir,
-            #                         'round-{}.pt'.format(round_idx + 1)))
+            torch.save(client.model.state_dict(),
+                       os.path.join(client_saved_dir,
+                                    'round-{}.pt'.format(round_idx + 1)))
 
 
         pickle.dump(loss, open(os.path.join(args.saved, 'loss.pkl'), 'wb'))
